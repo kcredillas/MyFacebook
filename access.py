@@ -4,6 +4,47 @@ import re
 
 #list of valid commands to use in the test case file
 validCommands = ['friendadd', 'viewby', 'logout', 'listadd', 'friendlist', 'postpicture', 'chlst', 'chmod', 'chown', 'readcomments', 'writecomments', 'end']
+def friendadd():
+	pass
+def viewby():
+	pass
+def logout():
+	pass
+def listadd():
+	pass
+def friendlist():
+	pass
+def postpicture():
+	pass
+def chlst():
+	pass
+def chmod():
+	pass
+def chown():
+	pass 
+def readcomments():
+	pass
+def writecomments():
+	pass
+def end():
+	pass
+def switch_case(command_string):
+	switcher = {
+		"friendadd": friendadd,
+		"viewby": viewby,
+		"logout": logout,
+		"listadd": listadd,
+		"friendlist": friendlist,
+		"postpicture": postpicture,
+		"chlst": chlst,
+		"chmod": chmod,
+		"chown": chown,
+		"readcomments": readcomments,
+		"writecomments": writecomments,
+		"end": end
+		}
+	func = switcher.get(command_string, lambda: "Invalid command")
+	func() 
 
 def main():
     #print ('Argument List:', str(sys.argv))
@@ -37,7 +78,7 @@ def main():
                 print("First command must be \"friendadd\".")
                 #TODO: report error to audit log file
                 return -1
-            
+		            
         except IOError:
             print("File not found.")
             #TODO: report file error to audit log file
