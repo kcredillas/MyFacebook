@@ -4,30 +4,34 @@ import re
 
 #list of valid commands to use in the test case file
 validCommands = ['friendadd', 'viewby', 'logout', 'listadd', 'friendlist', 'postpicture', 'chlst', 'chmod', 'chown', 'readcomments', 'writecomments', 'end']
+"""
+Function: friendadd
+Description: Creates an instance of a friend profile, not belonging to any list by default
+"""
 def friendadd():
-	pass
+    pass
 def viewby():
-	pass
+    pass
 def logout():
-	pass
+    pass
 def listadd():
-	pass
+    pass
 def friendlist():
-	pass
+    pass
 def postpicture():
-	pass
+    pass
 def chlst():
-	pass
+    pass
 def chmod():
-	pass
+    pass
 def chown():
-	pass 
+    pass
 def readcomments():
-	pass
+    pass
 def writecomments():
-	pass
+    pass
 def end():
-	pass
+    pass
 def switch_case(command_string):
 	switcher = {
 		"friendadd": friendadd,
@@ -80,6 +84,10 @@ def main():
                 print("First command must be \"friendadd\".")
                 #TODO: report error to audit log file
                 return -1
+            else: #parse the commands
+                for arg in commands: 
+                    switch_case(arg)
+
             		            
         except IOError:
             print("File not found.")
