@@ -58,14 +58,16 @@ def main():
         try:
             fObj = open(fileName, 'r')
             badCommands = list()
-            goodCommands = list()
+            queries = list()
+            commands = list()
             for line in fObj:
                 command = line.split(' ')[0]
                 if command.strip() not in validCommands:
                     badCommands.append(command)
                 else:
                     #this is a valid command!
-                    goodCommands.append(line.strip())
+                    queries.append(line.strip())
+                    commands.append(command)
             fObj.close()
 
             if (len(badCommands) > 0):
@@ -74,11 +76,11 @@ def main():
                 return -1
             
             #if file is valid, continue checking
-            if goodCommands[0].split()[0] != "friendadd":
+            if commands[0] != "friendadd":
                 print("First command must be \"friendadd\".")
                 #TODO: report error to audit log file
                 return -1
-		            
+            		            
         except IOError:
             print("File not found.")
             #TODO: report file error to audit log file
