@@ -8,8 +8,11 @@ validCommands = ['friendadd', 'viewby', 'logout', 'listadd', 'friendlist', 'post
 Function: friendadd
 Description: Creates an instance of a friend profile, not belonging to any list by default
 """
-def friendadd():
-    pass
+def friendadd(friendname):
+    instance_friend = Friend(friendname)
+    fObj = open('friends.txt','a')
+    fObj.append(instance_friend.name)
+    fObj.close()
 def viewby():
     pass
 def logout():
@@ -114,6 +117,12 @@ class Person(object):
     def is_Friend(self):
         return self.isFriend
     """
-    
-
+class Friend(object):
+    name = "admin"
+    AccessControlList = None
+    def __init__(self, name):
+        self.name = name
+    @classmethod        
+    def from_ACL(cls, AccessControlList):
+        self.AccessControlList = AccessControlList
 
