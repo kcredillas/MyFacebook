@@ -7,6 +7,42 @@ import re
 validCommands = ['friendadd', 'viewby', 'logout', 'listadd', 'friendlist',
                  'postpicture', 'chlst', 'chmod', 'chown', 'readcomments', 'writecomments', 'end']
 listOfProfiles = list()
+
+
+class AccessControlList(object):
+    pass
+
+
+class Person(object):
+    pass
+    """
+    isFriend = False #default value of a friend
+    def __init__(self, name, AccessControlList):
+        self.name = name
+        self.AccessControlList = AccessControlList
+
+    def is_Friend(self):
+        return self.isFriend
+    """
+
+
+class Admin(object):
+    name = None
+    AccessControlList = None
+    online_status = False
+
+    def __init__(self, name):
+        self.name = name
+
+    @classmethod
+    def from_ACL(cls, AccessControlList):
+        cls.AccessControlList = AccessControlList
+
+    @classmethod
+    def set_online(cls, online_status):
+        cls.online_status = online_status
+
+
 """
 Function: friendadd
 Description: Creates an instance of a friend profile, not belonging to any list by default
@@ -125,6 +161,8 @@ def main():
                 return -1
             else:  # parse the commands
                 # if second command is not equal to viewby, repeat until he successfully goes through
+                admin = Admin(queries[0].split()[1])
+                print(admin.name)
                 for query in queries:
                     args = query.split()
                     command_arg = args[0]
@@ -149,32 +187,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-class AccessControlList(object):
-    pass
-
-
-class Person(object):
-    pass
-    """
-    isFriend = False #default value of a friend
-    def __init__(self, name, AccessControlList):
-        self.name = name
-        self.AccessControlList = AccessControlList
-
-    def is_Friend(self):
-        return self.isFriend
-    """
-
-
-class Friend(object):
-    name = "admin"
-    AccessControlList = None
-
-    def __init__(self, name):
-        self.name = name
-
-    @classmethod
-    def from_ACL(cls, AccessControlList):
-        cls.AccessControlList = AccessControlList
