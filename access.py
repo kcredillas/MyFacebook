@@ -6,7 +6,21 @@ import re
 # list of valid commands to use in the test case file
 validCommands = ['friendadd', 'viewby', 'logout', 'listadd', 'friendlist',
                  'postpicture', 'chlst', 'chmod', 'chown', 'readcomments', 'writecomments', 'end']
-listOfProfiles = list()
+
+# list of all profiles online (in the friends.txt file)
+friend_txt_list = list()
+
+# list that keeps track of friend lists
+listOfFriendLists = dict()
+
+# dictionary that keeps track of picture associated to the owner and the pictures posted
+picture_traking = dict()
+
+# boolean value to keep track if someone is viewing or not
+is_viewing = False
+
+#track who is viewing
+who_is_viewing = []
 
 
 class AccessControlList(object):
@@ -50,26 +64,77 @@ Description: Creates an instance of a friend profile, not belonging to any list 
 
 
 def friendadd(friendname):
-    if friendname in listOfProfiles:
-        print("Username " + "\'" + friendname + "\' already exists.")
+    if friendname in friend_txt_list:
+        print("Error: Username " + "\'" + friendname + "\' already exists.")
         # TODO: Report to audit.txt
-        return -1
+        exit
     #instance_friend = Friend(friendname)
-    listOfProfiles.append(friendname)
+    friend_txt_list.append(friendname)
+    
     with open('friends.txt', 'a+') as fObj:
         fObj.write(friendname + '\n')
 
 
-def viewby():
-    pass
+def viewby(friendname):
+    """ 
+    To simplify the assignment MyFacebook does not support concurrent users.
+    That is, only one friend at a time can view your profile.
+    (If one of your friends is viewing your profile, another friend cannot view it.
+    """
+    global is_viewing
+    global who_is_viewing
+
+    if friendname not in friend_txt_list:
+        print("Error: Username " + "\'" + friendname +
+              "\' is not in friends.txt file.")
+        return
+        #sys.exit(1)
+
+    if (is_viewing == True):
+        print("Error: Username " + "\'" + who_is_viewing[0] +
+              "\' is viewing right now. " + "\'" + friendname +
+              "\' will not execute any commands then.")
+        return
+        #sys.exit(1)
+
+    is_viewing = True
+    who_is_viewing.append(friendname)
+    if friendname == friend_txt_list[0]:
+        print("Supreme Leader of MyFacebook " + "\'" + friendname +
+              "\' is viewing his/her profile.")
+    else:
+        print("Friend " + "\'" + friendname +
+              "\' is viewing the profile.")
 
 
 def logout():
-    pass
+    """
+    A friend or you no longer views your profile
+    """
+    global is_viewing
+    if is_viewing == False or len(who_is_viewing) == 0:
+        pass
+    else:
+        is_viewing = False
+        print(who_is_viewing[0] + " is no longer viewing profile.")
+        who_is_viewing.pop()
+
+def listadd(listname):
+    global who_is_viewing
+    if who_is_viewing[0] != friend_txt_list[0]:
+        print("Error: Username " + "\'" + who_is_viewing[0] +
+              "\' can't  execute listadd because he/she is not the Supreme Leader of MyFacebook " + friend_txt_list[0])
+        return
+    if listname == "nil":
+        print("Error: Can't create a list called 'nil'")
+        return
+    
+    listOfFriendLists[listname] = list()
+    #4/16/2019 7PM
 
 
-def listadd():
-    pass
+    
+    
 
 
 def friendlist():
@@ -107,9 +172,9 @@ def end():
 def switch_case(command_string, opt_arg1, opt_arg2):
     switcher = {
         "friendadd": lambda: friendadd(opt_arg1),
-        "viewby": viewby,
+        "viewby": lambda: viewby(opt_arg1),
         "logout": logout,
-        "listadd": listadd,
+        "listadd": lambda: listadd(opt_arg1),
         "friendlist": friendlist,
         "postpicture": postpicture,
         "chlst": chlst,
@@ -125,7 +190,7 @@ def switch_case(command_string, opt_arg1, opt_arg2):
 
 def main():
     # Clear and overwrite files
-    with open('friends.txt', 'w+'), open('audit.txt.', 'w+'):
+    with open('friends.txt', 'w+'), open('audit.txt.', 'w+'), open('pictures.txt.', 'w+'), open('lists.txt.', 'w+'):
         pass
 
     # Error Handling
@@ -151,7 +216,7 @@ def main():
 
             if (len(badCommands) > 0):
                 print("You queried some invalid commands!")
-                print("List of invalid commands: " + badCommands)
+                print("List of invalid commands: " + str(badCommands))
                 return -1
 
             # if file is valid, continue checking
@@ -161,8 +226,9 @@ def main():
                 return -1
             else:  # parse the commands
                 # if second command is not equal to viewby, repeat until he successfully goes through
-                admin = Admin(queries[0].split()[1])
-                print(admin.name)
+                #admin = Admin(queries[0].split()[1])
+                # print(admin.name)
+
                 for query in queries:
                     args = query.split()
                     command_arg = args[0]
@@ -170,10 +236,19 @@ def main():
                     opt_arg2 = None
                     # TODO: Handle regex for friendname, listname, and picturename args
                     if len(args) == 2:
-                        opt_arg1 = args[1]
+                        parse = args[1]
+                        parse = re.split('[\\s:/]', parse)
+                        opt_arg1 = ''.join(parse)
+                        if "viewby" == command_arg and opt_arg1 == friend_txt_list[0]:
+                            print(opt_arg1 + " now has administrator access!")
+                            #TODO: give him priveleges
+
                     elif len(args) == 3:
-                        opt_arg1 = args[1]
-                        opt_arg2 = args[2]
+                        parse = re.split('[\\s:/]', args[1])
+                        parse2 = re.split('[\\s:/]', args[2])
+                        opt_arg1 = ''.join(parse)
+                        opt_arg2 = ''.join(parse2)
+
                     switch_case(command_arg, opt_arg1, opt_arg2)
 
         except IOError:
