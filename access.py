@@ -128,18 +128,32 @@ def listadd(listname):
     if listname == "nil":
         print("Error: Can't create a list called 'nil'")
         return
-    
+    if listname in listOfFriendLists:
+        print("Error: Can't instantiate a list that already exists")
+        return
     listOfFriendLists[listname] = list()
+    print(str(listOfFriendLists))
     #4/16/2019 7PM
 
 
     
     
 
-
-def friendlist():
-    pass
-
+def friendlist(friendname, listname):
+    global who_is_viewing
+    if friendname not in friend_txt_list:
+        print("Error: Username " + "\'" + friendname + "\' does not exist")
+        return
+    if listname not in listOfFriendLists:
+        print("Error: Listname " + "\'" + listname + "\' does not exist")
+        return
+    if who_is_viewing[0] != friend_txt_list[0]:
+        print("Error: Username " + "'" + who_is_viewing[0] + "' ain't an admin.")
+        return
+    temp = listOfFriendLists.get(listname)
+    temp.append(friendname)
+    
+    print(str(listOfFriendLists))
 
 def postpicture():
     pass
@@ -175,7 +189,7 @@ def switch_case(command_string, opt_arg1, opt_arg2):
         "viewby": lambda: viewby(opt_arg1),
         "logout": logout,
         "listadd": lambda: listadd(opt_arg1),
-        "friendlist": friendlist,
+        "friendlist": lambda: friendlist(opt_arg1, opt_arg2),
         "postpicture": postpicture,
         "chlst": chlst,
         "chmod": chmod,
