@@ -1,0 +1,22 @@
+Friend root added
+Admin user 'root' is viewing his/her profile.
+Friend alice added
+Friend bob added
+List students created
+Friend alice added to list students
+Friend bob added to list students
+Friend tom added
+Friend root has logged out.
+Friend 'alice' is viewing the profile.
+Picture file1.txt with owner alice and default permissions has been posted
+Picture file2.txt with owner alice and default permissions has been posted
+Friend alice has logged out.
+Friend 'tom' is viewing the profile.
+View failed: Username 'tom' is viewing right now. 'bob' will not execute any commands then.
+Friend tom has logged out.
+Friend 'bob' is viewing the profile.
+Friend bob has logged out.
+Admin user 'root' is viewing his/her profile.
+Friend root has logged out.
+Friend 'tom' is viewing the profile.
+Friend tom has logged out.
