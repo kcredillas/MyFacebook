@@ -16,6 +16,7 @@ List for script set to testers by admin root
 ERROR Listadd: Can't instantiate a list that already exists
 Friend rita added to list testers
 Friend steveo added to list testers
+ERROR chown: Picture script3 not found
 Friend root has logged out.
 Friend 'rita' is viewing the profile.
 ERROR Posting picture failed: script already exists. Must give this picture a different name

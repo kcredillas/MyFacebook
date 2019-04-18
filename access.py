@@ -29,7 +29,6 @@ admin = ''
 who_is_viewing = []
 
 
-
 class AccessControlList(object):
     pass
 
@@ -81,11 +80,11 @@ def friendadd(friendname):
                     friendname + "\' already exists.")
         return
     #instance_friend = Friend(friendname)
-    
+
     if is_viewing:
         if who_is_viewing[0] != admin:
             log_message("ERROR Friendadd failed: Username " + "\'" +
-                    friendname + "\' is not an admin.")
+                        friendname + "\' is not an admin.")
             return
 
     friend_txt_list.append(friendname)
@@ -148,7 +147,8 @@ def listadd(listname):
             "ERROR Listadd failed: Can't create a list called 'None' equivalent")
         return
     if listname in listOfFriendLists:
-        log_message("ERROR Listadd: Can't instantiate a list that already exists")
+        log_message(
+            "ERROR Listadd: Can't instantiate a list that already exists")
         return
     listOfFriendLists[listname] = list()
     log_message("List " + listname + " created")
@@ -191,15 +191,20 @@ def postpicture(picturename):
             picturename = picturename + '.txt'
         with open(picturename, 'w+') as fObj:
             fObj.write(temp + '\n')
-        
+
         picture_obj = Picture(temp, who_is_viewing[0])
         picture_objects.append(picture_obj)
         log_message("Picture " + picturename + " with owner " +
                     picture_tracking[temp] + " and default permissions has been posted")
+        
+        with open('pictures.txt', 'w+') as fObj:
+            fObj.write(picturename+'\n')
+            
     else:
         log_message(
-                "ERROR Posting picture failed: No one is viewing the profile")
+            "ERROR Posting picture failed: No one is viewing the profile")
         return
+
 
 def chlst(picturename, listname):
     if is_viewing == False:
@@ -254,11 +259,36 @@ def chmod():
     pass
 
 
-def chown():
-    pass
+def chown(picturename, friendname):
+    if is_viewing == False:
+        log_message("ERROR chown: Someone needs to view the profile")
+        return
+    if who_is_viewing[0] != admin:
+        log_message("ERROR chown: User " +
+                    who_is_viewing[0] + " is not an admin")
+        return
+    if friendname not in friend_txt_list:
+        log_message("ERROR chown: User " + friendname + " not found")
+        return
+
+    if picturename.endswith('.txt'):
+        picturename = picturename.split('.txt')[0]
+
+    # if picturename not in picture_tracking:
+    #     log_message("Picture " + picturename + " not found")
+
+    for pic in picture_objects:
+        if picturename == pic.name:
+            pic.owner = friendname
+            picture_tracking[picturename] = friendname
+            log_message(picturename + "\'s owner is changed to" + friendname)
+            return
+
+    log_message("ERROR chown: Picture " + picturename + " not found")
 
 
 def readcomments():
+
     pass
 
 
@@ -280,7 +310,7 @@ def switch_case(command_string, opt_arg1, opt_arg2):
         "postpicture": lambda: postpicture(opt_arg1),
         "chlst": lambda: chlst(opt_arg1, opt_arg2),
         "chmod": chmod,
-        "chown": chown,
+        "chown": lambda: chown(opt_arg1, opt_arg2),
         "readcomments": readcomments,
         "writecomments": writecomments,
         "end": end
