@@ -14,16 +14,19 @@ friend_txt_list = list()
 listOfFriendLists = dict()
 
 # dictionary that keeps track of picture associated to the owner and the pictures posted
+# {}
 picture_tracking = dict()
 
-#list to keep track of current picture objects
+# list to keep track of current picture objects
 picture_objects = list()
 
-# boolean value to keep track if someone is viewing or not
+# boolean values to keep track if someone is existing
 is_viewing = False
+
 
 # track who is viewing
 who_is_viewing = []
+
 
 
 class AccessControlList(object):
@@ -51,13 +54,12 @@ class Picture(object):
     name = ''
     picture_group = None
     owner = ''
-    others = None #TODO: difference of all friends and pricture_group
-    permissions = {owner:'rw', picture_group:'--', others: '--'}
-    
-    def __init__(self, name, owner, permissions):
+    others = None  # TODO: difference of all friends and pricture_group
+    permissions = {owner: 'rw', picture_group: '--', others: '--'}
+
+    def __init__(self, name, owner):
         self.name = name
         self.owner = owner
-        self.permissions = permissions
 
 
 """
@@ -68,7 +70,7 @@ Description: Creates an instance of a friend profile, not belonging to any list 
 
 def friendadd(friendname):
     if friendname in friend_txt_list:
-        log_message("Friendadd failed: Username " + "\'" +
+        log_message("ERROR Friendadd failed: Username " + "\'" +
                     friendname + "\' already exists.")
         return
     #instance_friend = Friend(friendname)
@@ -80,21 +82,19 @@ def friendadd(friendname):
 
 def viewby(friendname):
     """ 
-    To simplify the assignment MyFacebook does not support concurrent users.
-    That is, only one friend at a time can view your profile.
-    (If one of your friends is viewing your profile, another friend cannot view it.
+    TODO: GIVE PERMISSIONS TO THE ADMIN friend[0]
     """
     global is_viewing
     global who_is_viewing
 
     if friendname not in friend_txt_list:
-        log_message("View failed: Username " + "\'" + friendname +
+        log_message("ERROR View failed: Username " + "\'" + friendname +
                     "\' is not in friends.txt file.")
         return
         # sys.exit(1)
 
     if (is_viewing == True):
-        log_message("View failed: Username " + "\'" + who_is_viewing[0] +
+        log_message("ERROR View failed: Username " + "\'" + who_is_viewing[0] +
                     "\' is viewing right now. " + "\'" + friendname +
                     "\' will not execute any commands then.")
         return
@@ -126,14 +126,15 @@ def logout():
 def listadd(listname):
     global who_is_viewing
     if who_is_viewing[0] != friend_txt_list[0]:
-        log_message("Listadd failed: Username " + "\'" + who_is_viewing[0] +
-                    "\' can't  execute listadd because he/she is not the Supreme Leader of MyFacebook " + friend_txt_list[0])
+        log_message("ERROR Listadd failed: Username " + "\'" + who_is_viewing[0] +
+                    "\' can't  execute listadd because he/she is not the admin " + friend_txt_list[0])
         return
-    if listname == "nil":
-        log_message("Listadd failed: Can't create a list called 'nil'")
+    if listname == "None" or listname == "nil" or listname == "null":
+        log_message(
+            "ERROR Listadd failed: Can't create a list called 'None' equivalent")
         return
     if listname in listOfFriendLists:
-        log_message("Listadd: Can't instantiate a list that already exists")
+        log_message("ERROR Listadd: Can't instantiate a list that already exists")
         return
     listOfFriendLists[listname] = list()
     log_message("List " + listname + " created")
@@ -144,14 +145,14 @@ def listadd(listname):
 def friendlist(friendname, listname):
     global who_is_viewing
     if friendname not in friend_txt_list:
-        log_message("Error: Username " + "\'" +
+        log_message("ERROR Username " + "\'" +
                     friendname + "\' does not exist")
         return
     if listname not in listOfFriendLists:
-        log_message("Error: Listname " + "\'" + listname + "\' does not exist")
+        log_message("ERROR Listname " + "\'" + listname + "\' does not exist")
         return
     if who_is_viewing[0] != friend_txt_list[0]:
-        log_message("Error: Username " + "'" +
+        log_message("ERROR Username " + "'" +
                     who_is_viewing[0] + "' ain't an admin.")
         return
     temp = listOfFriendLists.get(listname)
@@ -161,39 +162,80 @@ def friendlist(friendname, listname):
 
 
 def postpicture(picturename):
-    temp = ''
     global is_viewing
-    if picturename.endswith('.txt') and is_viewing:
-        temp = picturename.split('.txt')[0]
+    if is_viewing:
+        temp = picturename
+        if picturename.endswith('.txt'):
+            temp = picturename.split('.txt')[0]
         if temp in picture_tracking:
-            log_message("Posting picture failed: " + picturename +
+            log_message("ERROR Posting picture failed: " + picturename +
                         " already exists. Must give this picture a different name")
             return
         picture_tracking[temp] = who_is_viewing[0]
+
+        if not picturename.endswith('.txt'):
+            picturename = picturename + '.txt'
         with open(picturename, 'w+') as fObj:
             fObj.write(temp + '\n')
         
-
+        picture_obj = Picture(temp, who_is_viewing[0])
+        picture_objects.append(picture_obj)
         log_message("Picture " + picturename + " with owner " +
                     picture_tracking[temp] + " and default permissions has been posted")
     else:
-        if not (picturename.endswith('.txt')):
-            log_message(
-                "Posting picture failed: Picture name needs to end with .txt")
-            return
-        if (is_viewing == False):
-            log_message(
-                "Posting picture failed: No one is viewing the profile")
-            return
+        log_message(
+                "ERROR Posting picture failed: No one is viewing the profile")
+        return
 
 def chlst(picturename, listname):
-    if who_is_viewing == False:
-        log_message("chlst failed: Someone needs to view the profile.")
+    if is_viewing == False:
+        log_message("ERROR chlst failed: Someone needs to view the profile.")
         return
-    if listname == "nil":
-        #disassociate
-        pass
-    
+
+    # if not picturename.endswith('.txt'):
+    #     log_message("chlst failed: picturename must end with a .txt")
+    #     return
+
+    if listname not in listOfFriendLists:
+        log_message("ERROR chlst failed: " + listname + " is not a list")
+        return
+
+    # valid
+    nameOfPicture = picturename.split(".")[0]
+    pic_reference = None
+    for pic in picture_objects:
+        if pic.name == nameOfPicture:
+            pic_reference = pic
+    if pic_reference == None:  # didn't find a pic object
+        log_message("ERROR chlst failed: Reference to " +
+                    picturename + " does not exist.")
+
+    # at this point, we have found a picture object, compare owners
+    if pic_reference.owner == picture_tracking[nameOfPicture] or pic_reference.owner == friend_txt_list[0]:
+        if listname == "None" or listname == "nil":
+            pic_reference.picture_group = None
+            log_message(picturename + " is its own boss")
+            return
+        if who_is_viewing[0] == friend_txt_list[0]:
+            pic_reference.picture_group = listOfFriendLists[listname]
+            log_message("List for " + picturename + " set to " +
+                        listname + " by admin " + who_is_viewing[0])
+            return
+        elif pic_reference.owner not in listOfFriendLists[listname]:
+            log_message("ERROR chlst failed: Owner " + pic_reference.owner + " of " +
+                        pic_reference.name + " is not a member of friendlist " + listname)
+            return
+        else:
+            pic_reference.picture_group = listOfFriendLists[listname]
+            log_message("List for " + picturename + " set to " +
+                        listname + " by " + pic_reference.owner)
+
+    else:
+        log_message("ERROR chlst failed: User " +
+                    who_is_viewing[0] + " can't chlst " + picturename)
+        return
+
+
 def chmod():
     pass
 
