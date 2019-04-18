@@ -7,7 +7,9 @@ ERROR Friendadd failed: Username 'steveo' already exists.
 Friend root has logged out.
 ERROR View failed: Username 'steve' is not in friends.txt file.
 Friend 'steveo' is viewing the profile.
-Picture script.txt with owner steveo and default permissions has been posted
+Picture script with owner steveo and default permissions has been posted
+Permissions for script set to -w rw -- by steveo
+ERROR chlst failed: Reference to script2 does not exist.
 ERROR chlst failed: Owner steveo of script is not a member of friendlist testers
 Friend steveo has logged out.
 Admin user 'root' is viewing his/her profile.

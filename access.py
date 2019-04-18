@@ -14,7 +14,6 @@ friend_txt_list = list()
 listOfFriendLists = dict()
 
 # dictionary that keeps track of picture associated to the owner and the pictures posted
-# {}
 picture_tracking = dict()
 
 # list to keep track of current picture objects
@@ -194,12 +193,12 @@ def postpicture(picturename):
 
         picture_obj = Picture(temp, who_is_viewing[0])
         picture_objects.append(picture_obj)
-        log_message("Picture " + picturename + " with owner " +
+        log_message("Picture " + temp + " with owner " +
                     picture_tracking[temp] + " and default permissions has been posted")
-        
+
         with open('pictures.txt', 'w+') as fObj:
             fObj.write(picturename+'\n')
-            
+
     else:
         log_message(
             "ERROR Posting picture failed: No one is viewing the profile")
@@ -255,8 +254,41 @@ def chlst(picturename, listname):
         return
 
 
-def chmod():
-    pass
+def chmod(picturename, perm_args):
+    global is_viewing
+    global who_is_viewing
+
+    if is_viewing:
+        for arg in perm_args:
+            if len(arg) != 2:
+                log_message("ERROR chmod: " + arg +
+                            " is an invalid permission")
+                return
+            if not re.search('([r-])([w-])', arg):
+                log_message(
+                    "ERROR chmod: permissions need correct format of set {rw-}")
+                return
+        # Check for whoever is viewing is the owner of the picture or is the profile owner
+
+        pic_reference = None
+        for pic in picture_objects:
+            if pic.name == picturename:
+                pic_reference = pic
+        if pic_reference == None:  # didn't find a pic object
+            log_message("ERROR chlst failed: Reference to " +
+                        picturename + " does not exist.")
+            return
+
+        if who_is_viewing[0] == admin or who_is_viewing[0] == pic_reference.owner:
+            pic_reference.permissions[pic_reference.owner] = perm_args[0]
+            pic_reference.permissions[pic_reference.picture_group] = perm_args[1]
+            pic_reference.permissions[pic_reference.others] = perm_args[2]
+            print_this = ' '.join(perm_args)
+            log_message("Permissions for " + picturename +
+                        " set to " + print_this + " by " + who_is_viewing[0])
+    else:
+        log_message("ERROR chmod: no one is viewing the profile")
+        return
 
 
 def chown(picturename, friendname):
@@ -309,7 +341,7 @@ def switch_case(command_string, opt_arg1, opt_arg2):
         "friendlist": lambda: friendlist(opt_arg1, opt_arg2),
         "postpicture": lambda: postpicture(opt_arg1),
         "chlst": lambda: chlst(opt_arg1, opt_arg2),
-        "chmod": chmod,
+        "chmod": lambda: chmod(opt_arg1, opt_arg2),
         "chown": lambda: chown(opt_arg1, opt_arg2),
         "readcomments": readcomments,
         "writecomments": writecomments,
@@ -378,12 +410,37 @@ def main():
                         opt_arg1 = ''.join(parse)
                         # if "viewby" == command_arg and opt_arg1 == friend_txt_list[0]:
                         #     print(opt_arg1 + " now has administrator access!")
+                        if len(opt_arg1) > 30:
+                            log_message(
+                                "ERROR Arguments must be less than 30 ascii")
+                            return
+
+                    elif command_arg == "chmod":
+                        if len(args) != 5:
+                            log_message("ERROR Must list 3 permissions")
+                            return
+                        parse = re.split('[\\s:/]', args[1])
+                        opt_arg1 = ''.join(parse)
+                        if len(opt_arg1) > 30:
+                            log_message(
+                                "ERROR Arguments must be less than 30 ascii")
+                            return
+                        my_list = [args[2], args[3], args[4]]
+                        opt_arg2 = my_list
 
                     elif len(args) == 3:
                         parse = re.split('[\\s:/]', args[1])
                         parse2 = re.split('[\\s:/]', args[2])
                         opt_arg1 = ''.join(parse)
                         opt_arg2 = ''.join(parse2)
+                        if len(opt_arg1) > 30:
+                            log_message(
+                                "ERROR Arguments must be less than 30 ascii")
+                            return
+                        if len(opt_arg2) > 30:
+                            log_message(
+                                "ERROR Arguments must be less than 30 ascii")
+                            return
 
                     switch_case(command_arg, opt_arg1, opt_arg2)
 
