@@ -1,3 +1,12 @@
+"""
+Student: Kenneth Redillas
+ID: 800100241
+Date: 4/18/2019
+Programming Assignment #2: MyFacebook
+Class: CS465 - Cybersecurity
+"""
+
+#libraries that suffice
 import cmd
 import sys
 import re
@@ -54,11 +63,15 @@ class Picture(object):
     picture_group = None
     owner = ''
     others = None  # TODO: difference of all friends and pricture_group
-    permissions = {owner: 'rw', picture_group: '--', others: '--'}
+    permissions = None
 
     def __init__(self, name, owner):
         self.name = name
         self.owner = owner
+    
+    
+    
+
 
 
 """
@@ -93,9 +106,7 @@ def friendadd(friendname):
 
 
 def viewby(friendname):
-    """ 
-    TODO: GIVE PERMISSIONS TO THE ADMIN friend[0]
-    """
+    
     global is_viewing
     global who_is_viewing
 
@@ -151,7 +162,6 @@ def listadd(listname):
         return
     listOfFriendLists[listname] = list()
     log_message("List " + listname + " created")
-    print(str(listOfFriendLists))
     # 4/16/2019 7PM
 
 
@@ -171,7 +181,7 @@ def friendlist(friendname, listname):
     temp = listOfFriendLists.get(listname)
     temp.append(friendname)
     log_message("Friend " + friendname + " added to list " + listname)
-    print(str(listOfFriendLists))
+    
 
 
 def postpicture(picturename):
@@ -190,9 +200,12 @@ def postpicture(picturename):
             picturename = picturename + '.txt'
         with open(picturename, 'w+') as fObj:
             fObj.write(temp + '\n')
-
+        
         picture_obj = Picture(temp, who_is_viewing[0])
+        picture_obj.permissions = {0:'rw', 1:'--', 2:'--'}
         picture_objects.append(picture_obj)
+        
+        
         log_message("Picture " + temp + " with owner " +
                     picture_tracking[temp] + " and default permissions has been posted")
 
@@ -236,6 +249,11 @@ def chlst(picturename, listname):
             return
         if who_is_viewing[0] == friend_txt_list[0]:
             pic_reference.picture_group = listOfFriendLists[listname]
+            pic_reference.others = diffOf(friend_txt_list, listOfFriendLists[listname])
+
+            """
+            TODO: FIND DIFFERENCE BETWEEN SUPERSET AND PICTURE LIST and SET TO OTHERS
+            """
             log_message("List for " + picturename + " set to " +
                         listname + " by admin " + who_is_viewing[0])
             return
@@ -245,6 +263,7 @@ def chlst(picturename, listname):
             return
         else:
             pic_reference.picture_group = listOfFriendLists[listname]
+            pic_reference.others = diffOf(friend_txt_list, listOfFriendLists[listname])
             log_message("List for " + picturename + " set to " +
                         listname + " by " + pic_reference.owner)
 
@@ -269,20 +288,21 @@ def chmod(picturename, perm_args):
                     "ERROR chmod: permissions need correct format of set {rw-}")
                 return
         # Check for whoever is viewing is the owner of the picture or is the profile owner
-
+        if picturename.endswith('.txt'):
+            picturename = picturename.split('.txt')[0]
         pic_reference = None
         for pic in picture_objects:
             if pic.name == picturename:
                 pic_reference = pic
         if pic_reference == None:  # didn't find a pic object
-            log_message("ERROR chlst failed: Reference to " +
+            log_message("ERROR ----------chmod failed: Reference to " +
                         picturename + " does not exist.")
             return
 
-        if who_is_viewing[0] == admin or who_is_viewing[0] == pic_reference.owner:
-            pic_reference.permissions[pic_reference.owner] = perm_args[0]
-            pic_reference.permissions[pic_reference.picture_group] = perm_args[1]
-            pic_reference.permissions[pic_reference.others] = perm_args[2]
+        if who_is_viewing[0] == friend_txt_list[0] or who_is_viewing[0] == pic_reference.owner:
+            pic_reference.permissions[0] = perm_args[0]
+            pic_reference.permissions[1] = perm_args[1]
+            pic_reference.permissions[2] = perm_args[2]
             print_this = ' '.join(perm_args)
             log_message("Permissions for " + picturename +
                         " set to " + print_this + " by " + who_is_viewing[0])
@@ -313,7 +333,7 @@ def chown(picturename, friendname):
         if picturename == pic.name:
             pic.owner = friendname
             picture_tracking[picturename] = friendname
-            log_message(picturename + "\'s owner is changed to" + friendname)
+            log_message(picturename + "\'s owner is now " + friendname)
             return
 
     log_message("ERROR chown: Picture " + picturename + " not found")
@@ -324,15 +344,45 @@ def readcomments():
     pass
 
 
-def writecomments():
-    pass
+def writecomments(picturename, text):
+    if is_viewing:
+        nameOfPicture = picturename.split(".")[0]
+        pic_reference = None
+        for pic in picture_objects:
+            if pic.name == nameOfPicture:
+                pic_reference = pic
+        if pic_reference == None:  # didn't find a pic object
+            log_message("ERROR chlst failed: Reference to " +
+                    picturename + " does not exist.")
+            return
+        
+        #CASES
+        if who_is_viewing[0] == pic_reference.owner and pic_reference.permissions[0][1] == 'w':
+            log_message("Friend " + who_is_viewing[0]+ " wrote to " + picturename +": " + text)
+        elif who_is_viewing[0] != pic_reference.owner and (who_is_viewing[0] in pic_reference.picture_group) and pic_reference.permissions[1][1] == 'w':
+            log_message("Friend " + who_is_viewing[0]+ " wrote to " + picturename +": " + text)
+        elif who_is_viewing[0] != pic_reference.owner and (not (who_is_viewing[0] in pic_reference.picture_group)) and pic_reference.permissions[2][1] == 'w':
+            log_message("Friend " + who_is_viewing[0]+ " wrote to " + picturename +": " + text)
+        else:
+            # log_message("OWNER:"+str(pic_reference.owner))
+            # log_message("PERMISSIONS:"+str(pic_reference.permissions))
+            # log_message("GROUP:"+str(pic_reference.picture_group))
+            # log_message("OTHERS:"+str(pic_reference.others))
+            log_message(who_is_viewing[0]+" :ACCESS DENIED to " + picturename)
+            return
+        with open(picturename+'.txt', 'a+') as fObj:
+            fObj.write(text + '\n')
+    else:
+        log_message("Error: No one is viewing the profile.")
+        return
+
 
 
 def end():
     pass
 
 
-def switch_case(command_string, opt_arg1, opt_arg2):
+def switch_case(command_string, opt_arg1, opt_arg2, text):
     switcher = {
         "friendadd": lambda: friendadd(opt_arg1),
         "viewby": lambda: viewby(opt_arg1),
@@ -344,7 +394,7 @@ def switch_case(command_string, opt_arg1, opt_arg2):
         "chmod": lambda: chmod(opt_arg1, opt_arg2),
         "chown": lambda: chown(opt_arg1, opt_arg2),
         "readcomments": readcomments,
-        "writecomments": writecomments,
+        "writecomments": lambda: writecomments(opt_arg1, text),
         "end": end
     }
     func = switcher.get(command_string, lambda: "Invalid command")
@@ -356,6 +406,8 @@ def log_message(message):
     with open('audit.txt', 'a') as audit:
         audit.write(message + '\n')
 
+def diffOf(bigpond, littlepond):
+    return (list(set(bigpond) - set(littlepond)))
 
 def main():
     # Clear and overwrite files
@@ -366,7 +418,7 @@ def main():
     if (len(sys.argv) == 2):
         fileName = sys.argv[1]
         if not(fileName.endswith('.txt')):
-            print("Your file should be in .txt format only!!!")
+            log_message("Your file should be in .txt format only!!!")
             return -1
         try:
             fObj = open(fileName, 'r')
@@ -384,14 +436,14 @@ def main():
             fObj.close()
 
             if (len(badCommands) > 0):
-                print("You queried some invalid commands!")
-                print("List of invalid commands: " + str(badCommands))
+                log_message("You queried some invalid commands!")
+                log_message("List of invalid commands: " + str(badCommands))
                 return -1
 
             # if file is valid, continue checking
             if commands[0] != "friendadd":
-                print("First command must be \"friendadd\".")
-                # TODO: report error to audit log file
+                log_message("First command must be \"friendadd\".")
+                
                 return -1
             else:  # parse the commands
                 # if second command is not equal to viewby, repeat until he successfully goes through
@@ -403,7 +455,8 @@ def main():
                     command_arg = args[0]
                     opt_arg1 = None
                     opt_arg2 = None
-                    # TODO: Handle regex for friendname, listname, and picturename args
+                    text = ''
+                    
                     if len(args) == 2:
                         parse = args[1]
                         parse = re.split('[\\s:/]', parse)
@@ -427,6 +480,17 @@ def main():
                             return
                         my_list = [args[2], args[3], args[4]]
                         opt_arg2 = my_list
+                    
+                    elif command_arg == "writecomments":
+                        parse = query.split()[1]
+                        parse = re.split('[\\s:/]', parse)
+                        opt_arg1 = ''.join(parse)
+                        divider = "writecomments " + opt_arg1
+                        text = query.split(divider)[1]
+                        if len(opt_arg1) > 30:
+                            log_message(
+                                "ERROR Arguments must be less than 30 ascii")
+                            return
 
                     elif len(args) == 3:
                         parse = re.split('[\\s:/]', args[1])
@@ -442,15 +506,15 @@ def main():
                                 "ERROR Arguments must be less than 30 ascii")
                             return
 
-                    switch_case(command_arg, opt_arg1, opt_arg2)
+                    switch_case(command_arg, opt_arg1, opt_arg2, text)
 
         except IOError:
-            print("File not found.")
-            # TODO: report file error to audit log file
+            log_message("File not found.")
+            
 
     else:
-        print("Error: Need to have a test case file as an argument, where file is the one argument.")
-        print("Format should be: python access.py [filename]")
+        log_message("Error: Need to have a test case file as an argument, where file is the one argument.")
+        log_message("Format should be: python access.py [filename]")
 
 
 if __name__ == "__main__":
