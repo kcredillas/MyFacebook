@@ -22,7 +22,8 @@ picture_objects = list()
 
 # boolean values to keep track if someone is existing
 is_viewing = False
-
+does_admin_exist = False
+admin = ''
 
 # track who is viewing
 who_is_viewing = []
@@ -69,11 +70,24 @@ Description: Creates an instance of a friend profile, not belonging to any list 
 
 
 def friendadd(friendname):
+    global does_admin_exist
+    global admin
+    if does_admin_exist == False:
+        does_admin_exist = True
+        admin = friendname
+
     if friendname in friend_txt_list:
         log_message("ERROR Friendadd failed: Username " + "\'" +
                     friendname + "\' already exists.")
         return
     #instance_friend = Friend(friendname)
+    
+    if is_viewing:
+        if who_is_viewing[0] != admin:
+            log_message("ERROR Friendadd failed: Username " + "\'" +
+                    friendname + "\' is not an admin.")
+            return
+
     friend_txt_list.append(friendname)
     log_message("Friend " + friendname + " added")
     with open('friends.txt', 'a+') as fObj:

@@ -20,5 +20,5 @@ Friend root has logged out.
 Friend 'rita' is viewing the profile.
 ERROR Posting picture failed: script already exists. Must give this picture a different name
 ERROR Listadd failed: Username 'rita' can't  execute listadd because he/she is not the admin root
-Friend stew added
+ERROR Friendadd failed: Username 'stew' is not an admin.
 Friend rita has logged out.
