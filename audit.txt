@@ -1,30 +1,29 @@
 Friend root added
 Admin user 'root' is viewing his/her profile.
-Friend alice added
-Friend bob added
-List students created
-Friend alice added to list students
-Friend bob added to list students
-Friend tom added
+Friend steveo added
+Friend rita added
+List testers created
+ERROR Friendadd failed: Username 'steveo' already exists.
 Friend root has logged out.
-Friend 'alice' is viewing the profile.
-Picture file1 with owner alice and default permissions has been posted
-Friend alice wrote to file1.txt:  Text from Alice in file1
-Picture file2 with owner alice and default permissions has been posted
-Friend alice wrote to file2.txt:  Text from Alice in file2
-Permissions for file2 set to rw rw r- by alice
-List for file2.txt set to students by alice
-Friend alice has logged out.
-Friend 'tom' is viewing the profile.
-tom :ACCESS DENIED to file2.txt
-ERROR View failed: Username 'tom' is viewing right now. 'bob' will not execute any commands then.
-Friend tom has logged out.
-Friend 'bob' is viewing the profile.
-Friend bob wrote to file2.txt:  Text from Bob in file2
-Friend bob has logged out.
+ERROR View failed: Username 'steve' is not in friends.txt file.
+Friend 'steveo' is viewing the profile.
+Picture script with owner steveo and default permissions has been posted
+Permissions for script set to -w rw -- by steveo
+ERROR ----------chmod failed: Reference to script2 does not exist.
+ERROR chlst failed: Owner steveo of script is not a member of friendlist testers
+Friend steveo has logged out.
 Admin user 'root' is viewing his/her profile.
-file1's owner is now tom
+ERROR Friendadd failed: Username 'rita' already exists.
+List for script set to testers by admin root
+ERROR Listadd: Can't instantiate a list that already exists
+Friend rita added to list testers
+Friend steveo added to list testers
+ERROR chown: Picture script3 not found
 Friend root has logged out.
-Friend 'tom' is viewing the profile.
-Friend tom wrote to file1.txt:  Text from Tom in file1
-Friend tom has logged out.
+Friend 'rita' is viewing the profile.
+ERROR Posting picture failed: script already exists. Must give this picture a different name
+Friend rita wrote to script:  echo Hello World!
+ERROR Listadd failed: Username 'rita' can't  execute listadd because he/she is not the admin root
+ERROR Friendadd failed: Username 'stew' is not an admin.
+Friend rita has logged out.
+Terminated

@@ -198,7 +198,7 @@ def postpicture(picturename):
 
         if not picturename.endswith('.txt'):
             picturename = picturename + '.txt'
-        with open(picturename, 'w+') as fObj:
+        with open(picturename, 'a+') as fObj:
             fObj.write(temp + '\n')
         
         picture_obj = Picture(temp, who_is_viewing[0])
@@ -251,9 +251,7 @@ def chlst(picturename, listname):
             pic_reference.picture_group = listOfFriendLists[listname]
             pic_reference.others = diffOf(friend_txt_list, listOfFriendLists[listname])
 
-            """
-            TODO: FIND DIFFERENCE BETWEEN SUPERSET AND PICTURE LIST and SET TO OTHERS
-            """
+
             log_message("List for " + picturename + " set to " +
                         listname + " by admin " + who_is_viewing[0])
             return
@@ -339,30 +337,101 @@ def chown(picturename, friendname):
     log_message("ERROR chown: Picture " + picturename + " not found")
 
 
-def readcomments():
-
-    pass
-
-
-def writecomments(picturename, text):
+def readcomments(picturename):
     if is_viewing:
-        nameOfPicture = picturename.split(".")[0]
+        nameOfPicture = picturename.split(".txt")[0]
         pic_reference = None
         for pic in picture_objects:
             if pic.name == nameOfPicture:
                 pic_reference = pic
         if pic_reference == None:  # didn't find a pic object
-            log_message("ERROR chlst failed: Reference to " +
+            log_message("ERROR readcomments failed: Reference to " +
+                    picturename + " does not exist.")
+            return
+        
+        # #CASES
+        if pic_reference.picture_group == None:
+            return
+
+        if who_is_viewing[0] == pic_reference.owner and pic_reference.permissions[0][0] == 'r':
+            with open(picturename, 'r') as fObj:
+                line = fObj.readline()
+                cnt = 0
+                while line:
+                    if cnt ==  0:
+                        print("User {}: {}".format(who_is_viewing[0], line.strip()))
+                    else: 
+                        print("Comment {}: {}".format(cnt, line.strip()))
+                    line = fObj.readline()
+                    cnt+=1
+
+        #     pass
+            
+        elif who_is_viewing[0] != pic_reference.owner and who_is_viewing[0] in pic_reference.picture_group and pic_reference.permissions[1][0] == 'r':
+            with open(picturename, 'r') as fObj:
+                line = fObj.readline()
+                cnt = 0
+                while line:
+                    if cnt ==  0:
+                        print("User {}: {}".format(who_is_viewing[0], line.strip()))
+                    else: 
+                        print("Comment {}: {}".format(cnt, line.strip()))
+                    line = fObj.readline()
+                    cnt+=1
+        # pass
+        elif who_is_viewing[0] != pic_reference.owner and (not (who_is_viewing[0] in pic_reference.picture_group)) and pic_reference.permissions[2][0] == 'r':
+            with open(picturename, 'r') as fObj:
+                line = fObj.readline()
+                cnt = 0
+                while line:
+                    if cnt ==  0:
+                        print("User {}: {}".format(who_is_viewing[0], line.strip()))
+                    else: 
+                        print("Comment {}: {}".format(cnt, line.strip()))
+                    line = fObj.readline()
+                    cnt+=1
+        # else:
+            # log_message("OWNER:"+str(pic_reference.owner))
+            # log_message("PERMISSIONS:"+str(pic_reference.permissions))
+            # log_message("GROUP:"+str(pic_reference.picture_group))
+            # log_message("OTHERS:"+str(pic_reference.others))
+            # log_message(who_is_viewing[0]+" :ACCESS DENIED to " + picturename)
+            # return
+    
+    else:
+        log_message("Error: No one is viewing the profile.")
+        return
+    
+
+
+def writecomments(picturename, text):
+    if is_viewing:
+        nameOfPicture = picturename.split(".txt")[0]
+        pic_reference = None
+        for pic in picture_objects:
+            if pic.name == nameOfPicture:
+                pic_reference = pic
+        if pic_reference == None:  # didn't find a pic object
+            log_message("ERROR writecomments failed: Reference to " +
                     picturename + " does not exist.")
             return
         
         #CASES
+        
+        if pic_reference.picture_group == None:
+            return
         if who_is_viewing[0] == pic_reference.owner and pic_reference.permissions[0][1] == 'w':
             log_message("Friend " + who_is_viewing[0]+ " wrote to " + picturename +": " + text)
+            with open(picturename, 'a+') as fObj:
+                fObj.write(text + '\n')
         elif who_is_viewing[0] != pic_reference.owner and (who_is_viewing[0] in pic_reference.picture_group) and pic_reference.permissions[1][1] == 'w':
             log_message("Friend " + who_is_viewing[0]+ " wrote to " + picturename +": " + text)
+            with open(picturename, 'a+') as fObj:
+                fObj.write(text + '\n')
         elif who_is_viewing[0] != pic_reference.owner and (not (who_is_viewing[0] in pic_reference.picture_group)) and pic_reference.permissions[2][1] == 'w':
             log_message("Friend " + who_is_viewing[0]+ " wrote to " + picturename +": " + text)
+            with open(picturename, 'a+') as fObj:
+                fObj.write(text + '\n')
         else:
             # log_message("OWNER:"+str(pic_reference.owner))
             # log_message("PERMISSIONS:"+str(pic_reference.permissions))
@@ -370,8 +439,7 @@ def writecomments(picturename, text):
             # log_message("OTHERS:"+str(pic_reference.others))
             log_message(who_is_viewing[0]+" :ACCESS DENIED to " + picturename)
             return
-        with open(picturename+'.txt', 'a+') as fObj:
-            fObj.write(text + '\n')
+    
     else:
         log_message("Error: No one is viewing the profile.")
         return
@@ -379,7 +447,8 @@ def writecomments(picturename, text):
 
 
 def end():
-    pass
+    log_message("Terminated")
+    
 
 
 def switch_case(command_string, opt_arg1, opt_arg2, text):
@@ -393,9 +462,9 @@ def switch_case(command_string, opt_arg1, opt_arg2, text):
         "chlst": lambda: chlst(opt_arg1, opt_arg2),
         "chmod": lambda: chmod(opt_arg1, opt_arg2),
         "chown": lambda: chown(opt_arg1, opt_arg2),
-        "readcomments": readcomments,
+        "readcomments": lambda: readcomments(opt_arg1),
         "writecomments": lambda: writecomments(opt_arg1, text),
-        "end": end
+        "end": lambda: end
     }
     func = switcher.get(command_string, lambda: "Invalid command")
     func()
@@ -410,7 +479,7 @@ def diffOf(bigpond, littlepond):
     return (list(set(bigpond) - set(littlepond)))
 
 def main():
-    # Clear and overwrite files
+    #Clean slate
     with open('friends.txt', 'w+'), open('audit.txt.', 'w+'), open('pictures.txt.', 'w+'), open('lists.txt.', 'w+'):
         pass
 
@@ -456,7 +525,7 @@ def main():
                     opt_arg1 = None
                     opt_arg2 = None
                     text = ''
-                    
+
                     if len(args) == 2:
                         parse = args[1]
                         parse = re.split('[\\s:/]', parse)
@@ -507,6 +576,7 @@ def main():
                             return
 
                     switch_case(command_arg, opt_arg1, opt_arg2, text)
+            end()
 
         except IOError:
             log_message("File not found.")
