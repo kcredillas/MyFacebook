@@ -1,31 +1,27 @@
-friendadd root
-viewby root
-friendadd steveo
-friendadd rita
-listadd testers
-friendadd steveo
+friendadd ken
+viewby aaaa
+viewby ken
+friendadd logan
+friendadd matt
+listadd buddies
+friendlist loga
+friendlist logan buddies
+friendlist matt buddies
 logout
 viewby steve
-viewby steveo
-postpicture script
-writecomments script echo Hello World!
-chmod script -w rw --
-chmod script2 rw rw rw
-chlst script testers
+viewby matt
+postpicture test.txt
+writecomments test whatsup
+chmod test -w r- --
+chlst test sefe2
+chlst test buddies
 logout
-viewby root
-friendadd rita
-chlst script testers
-listadd testers
-friendlist rita testers
-friendlist steveo testers
-chown script3 rita
+viewby logan
+writecomments test.txt hey
+readcomments test.txt
+viewby ken
 logout
-viewby rita
-postpicture script
-writecomments script echo Hello World!
-readcomments script
-listadd developers
-friendadd stew
+viewby ken
+chlst test nil
 logout
 end

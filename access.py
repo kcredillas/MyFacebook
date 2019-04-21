@@ -37,30 +37,30 @@ admin = ''
 who_is_viewing = []
 
 
-class AccessControlList(object):
-    pass
+# class AccessControlList(object):
+#     pass
 
 
-class Admin(object):
-    name = None
-    AccessControlList = None
-    online_status = False
+# class Admin(object):
+#     name = None
+#     AccessControlList = None
+#     online_status = False
 
-    def __init__(self, name):
-        self.name = name
+#     def __init__(self, name):
+#         self.name = name
 
-    @classmethod
-    def from_ACL(cls, AccessControlList):
-        cls.AccessControlList = AccessControlList
+#     @classmethod
+#     def from_ACL(cls, AccessControlList):
+#         cls.AccessControlList = AccessControlList
 
-    @classmethod
-    def set_online(cls, online_status):
-        cls.online_status = online_status
+#     @classmethod
+#     def set_online(cls, online_status):
+#         cls.online_status = online_status
 
 
 class Picture(object):
     name = ''
-    picture_group = None
+    picture_group = []
     owner = ''
     others = None  # TODO: difference of all friends and pricture_group
     permissions = None
@@ -82,7 +82,9 @@ def friendadd(friendname):
     if does_admin_exist == False:
         does_admin_exist = True
         admin = friendname
-
+    if friendname == None:
+        log_message("Null error")
+        return
     if friendname in friend_txt_list:
         log_message("Error: Friend" + " " +
                     friendname + " already exists.")
@@ -92,7 +94,7 @@ def friendadd(friendname):
     if is_viewing:
         if who_is_viewing[0] != admin:
             log_message("ERROR Friendadd failed: Username " + "\'" +
-                        friendname + "\' is not an admin.")
+                        who_is_viewing[0] + "\' is not an admin.")
             return
 
     friend_txt_list.append(friendname)
@@ -179,6 +181,9 @@ def friendlist(friendname, listname):
 
 
 def postpicture(picturename):
+    if picturename == None:
+        log_message("Null error")
+        return
     global is_viewing
     if is_viewing:
         temp = picturename
@@ -220,26 +225,25 @@ def chlst(picturename, listname):
     #     log_message("chlst failed: picturename must end with a .txt")
     #     return
 
-    if listname not in listOfFriendLists:
-        log_message("ERROR chlst failed: " + listname + " is not a list")
-        return
-
     # valid
     nameOfPicture = picturename.split(".")[0]
     pic_reference = None
     for pic in picture_objects:
         if pic.name == nameOfPicture:
             pic_reference = pic
-    if pic_reference == None:  # didn't find a pic object
-        log_message("ERROR chlst failed: Reference to " +
-                    picturename + " does not exist.")
 
     # at this point, we have found a picture object, compare owners
     if pic_reference.owner == picture_tracking[nameOfPicture] or pic_reference.owner == friend_txt_list[0]:
         if listname == "None" or listname == "nil":
-            pic_reference.picture_group = None
+            pic_reference.picture_group = []
             log_message(picturename + " is its own boss")
             return
+        if listname not in listOfFriendLists:
+            log_message("ERROR chlst failed: " + listname + " is not a list")
+            return
+        if pic_reference == None:  # didn't find a pic object
+            log_message("ERROR chlst failed: Reference to " +
+                    picturename + " does not exist.")
         if who_is_viewing[0] == friend_txt_list[0]:
             pic_reference.picture_group = listOfFriendLists[listname]
             pic_reference.others = diffOf(
@@ -297,6 +301,10 @@ def chmod(picturename, perm_args):
             print_this = ' '.join(perm_args)
             log_message("Permissions for " + picturename +
                         " set to " + print_this + " by " + who_is_viewing[0])
+        else:
+            log_message(
+                who_is_viewing[0] + " is not an owner of picture " + pic_reference.name)
+
     else:
         log_message("ERROR chmod: no one is viewing the profile")
         return
@@ -332,6 +340,8 @@ def chown(picturename, friendname):
 
 def readcomments(picturename):
     if is_viewing:
+        if not picturename.endswith('.txt'):
+                picturename = picturename + '.txt'
         nameOfPicture = picturename.split(".txt")[0]
         pic_reference = None
         for pic in picture_objects:
@@ -339,12 +349,10 @@ def readcomments(picturename):
                 pic_reference = pic
         if pic_reference == None:  # didn't find a pic object
             log_message("ERROR readcomments failed: Reference to " +
-                        picturename + " does not exist.")
+                        nameOfPicture + " does not exist.")
             return
 
-        # #CASES
-        if pic_reference.picture_group == None:
-            return
+        #CASES
 
         if who_is_viewing[0] == pic_reference.owner and pic_reference.permissions[0][0] == 'r':
             with open(picturename, 'r') as fObj:
@@ -352,7 +360,7 @@ def readcomments(picturename):
                 cnt = 0
                 while line:
                     if cnt == 0:
-                        print("User {}: {}".format(
+                        print("User {}: reading {}".format(
                             who_is_viewing[0], line.strip()))
                     else:
                         print("Comment {}: {}".format(cnt, line.strip()))
@@ -386,13 +394,9 @@ def readcomments(picturename):
                         print("Comment {}: {}".format(cnt, line.strip()))
                     line = fObj.readline()
                     cnt += 1
-        # else:
-            # log_message("OWNER:"+str(pic_reference.owner))
-            # log_message("PERMISSIONS:"+str(pic_reference.permissions))
-            # log_message("GROUP:"+str(pic_reference.picture_group))
-            # log_message("OTHERS:"+str(pic_reference.others))
-            # log_message(who_is_viewing[0]+" :ACCESS DENIED to " + picturename)
-            # return
+        else:
+            log_message(who_is_viewing[0]+" :ACCESS DENIED to " + picturename)
+            return
 
     else:
         log_message("Error: No one is viewing the profile.")
@@ -401,6 +405,8 @@ def readcomments(picturename):
 
 def writecomments(picturename, text):
     if is_viewing:
+        if not picturename.endswith('.txt'):
+            picturename = picturename + '.txt'
         nameOfPicture = picturename.split(".txt")[0]
         pic_reference = None
         for pic in picture_objects:
@@ -408,14 +414,15 @@ def writecomments(picturename, text):
                 pic_reference = pic
         if pic_reference == None:  # didn't find a pic object
             log_message("ERROR writecomments failed: Reference to " +
-                        picturename + " does not exist.")
+                        nameOfPicture + " does not exist.")
             return
 
         # CASES
 
-        if pic_reference.picture_group == None:
-            return
-            
+        # if pic_reference.picture_group == None:
+        #     log_message("Null errorrrr")
+        #     return
+
         if who_is_viewing[0] == pic_reference.owner and pic_reference.permissions[0][1] == 'w':
             log_message(
                 "Friend " + who_is_viewing[0] + " wrote to " + picturename + ": " + text)
@@ -429,7 +436,7 @@ def writecomments(picturename, text):
         elif who_is_viewing[0] != pic_reference.owner and (not (who_is_viewing[0] in pic_reference.picture_group)) and pic_reference.permissions[2][1] == 'w':
             log_message(
                 "Friend " + who_is_viewing[0] + " wrote to " + picturename + ": " + text)
-            
+
             with open(picturename, 'a+') as fObj:
                 fObj.write(text + '\n')
         else:
@@ -495,6 +502,8 @@ def main():
             queries = list()
             commands = list()
             for line in fObj:
+                if line == "\n":
+                    continue
                 command = line.split(' ')[0]
                 if command.strip() not in validCommands:
                     badCommands.append(command)
